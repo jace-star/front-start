@@ -1,7 +1,6 @@
 <script setup lang="ts">
+import { Pause, Send } from "@lucide/vue";
 import { nextTick, ref, watch } from "vue";
-import pauseIcon from "@/assets/icons/pause.svg";
-import sendIcon from "@/assets/icons/send.svg";
 
 defineOptions({ name: "ChatComposer" });
 
@@ -88,13 +87,18 @@ function onKeydown(event: KeyboardEvent) {
       :aria-label="streaming ? '暂停' : '发送'"
       :disabled="!streaming && (disabled || !value.trim())"
     >
-      <img
-        :src="streaming ? pauseIcon : sendIcon"
-        alt=""
+      <Pause
+        v-if="streaming"
         class="chat-composer__send-icon"
-        width="18"
-        height="18"
-      >
+        :size="18"
+        aria-hidden="true"
+      />
+      <Send
+        v-else
+        class="chat-composer__send-icon"
+        :size="18"
+        aria-hidden="true"
+      />
     </button>
   </form>
 </template>
@@ -145,14 +149,14 @@ function onKeydown(event: KeyboardEvent) {
   border: 0;
   border-radius: 999px;
   background: rgb(37 99 235);
+  color: rgb(255 255 255);
   cursor: pointer;
   padding: 0;
 }
 
 .chat-composer__send-icon {
   display: block;
-  width: 18px;
-  height: 18px;
+  flex-shrink: 0;
 }
 
 .chat-composer__send:disabled {

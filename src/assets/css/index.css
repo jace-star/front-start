@@ -1,2 +1,2 @@
-@import url("reset.css");
-@import url("base.less");
+@import "./reset.css";
+@import "./base.less";

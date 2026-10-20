@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { ChevronDown } from "@lucide/vue";
 import { useVModel } from "@vueuse/core";
 import { useId } from "vue";
-import chevronDownIcon from "@/assets/icons/chevron-down.svg";
 
 defineOptions({ name: "Collapse" });
 
@@ -69,7 +69,7 @@ function toggle() {
         :class="{ 'collapse__chevron--open': expanded }"
         aria-hidden="true"
       >
-        <img :src="chevronDownIcon" alt="" class="collapse__chevron-img">
+        <ChevronDown class="collapse__chevron-img" :size="20" aria-hidden="true" />
       </span>
     </button>
 
