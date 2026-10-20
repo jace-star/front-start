@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useVModel } from "@vueuse/core";
 import { useId } from "vue";
-import chevronDownIcon from "@/assets/icon/chevron-down.svg";
+import chevronDownIcon from "@/assets/icons/chevron-down.svg";
 
 defineOptions({ name: "Collapse" });
 
