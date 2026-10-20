@@ -1,10 +1,13 @@
-import { defineConfig, presetWind4, transformerDirectives } from "unocss";
+import type { Preset } from "unocss";
+import { defineConfig, presetWind4, transformerDirectives, transformerVariantGroup } from "unocss";
+import presetAnimations from "unocss-preset-animations";
 import { presetBlock } from "unocss-preset-block";
 import { presetPalette } from "unocss-preset-palette";
+import { presetShadcn } from "unocss-preset-shadcn";
 
 export default defineConfig({
   presets: [
-    presetWind4(),
+    presetWind4() as Preset,
     presetBlock(),
     presetPalette({
       colorFormat: "rgb",
@@ -27,6 +30,15 @@ export default defineConfig({
       },
       cssVarName: "color-[name]",
     }),
+    presetAnimations() as Preset,
+    presetShadcn(
+      {
+        color: "neutral",
+      },
+      {
+        componentLibrary: "reka",
+      },
+    ) as Preset,
   ],
   rules: [
     // 自定义 font-size: text-<N>px
@@ -76,5 +88,15 @@ export default defineConfig({
     transformerDirectives({
       applyVariable: ["--at-apply", "--uno-apply", "--uno"],
     }),
+    transformerVariantGroup(),
   ],
+  // shadcn-vue 组件里的 class 常写在 .ts 中，需纳入扫描
+  content: {
+    pipeline: {
+      include: [
+        /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
+        "(components|src)/**/*.{js,ts}",
+      ],
+    },
+  },
 });

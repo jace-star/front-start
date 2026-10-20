@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { ChatSession } from "@/composables/useChat";
+import { PanelLeft, Plus } from "@lucide/vue";
 import { computed, ref } from "vue";
-import plusIcon from "@/assets/icons/plus.svg";
-import sidebarIcon from "@/assets/icons/sidebar.svg";
 
 defineOptions({ name: "ChatSidebar" });
 
@@ -23,8 +22,35 @@ const emit = defineEmits<{
 const railCollapsed = computed(() => props.collapsed && !props.narrow);
 /** 同一时间只展示一个提示，避免快速划过时叠出多个 */
 const openTip = ref<"fab" | "toggle" | "new" | null>(null);
+const tipStyle = ref<Record<string, string>>({});
 
-function showTip(key: "fab" | "toggle" | "new") {
+const tipLabel = computed(() => {
+  switch (openTip.value) {
+    case "fab":
+      return "展开侧栏";
+    case "new":
+      return "新建会话";
+    case "toggle":
+      return props.collapsed ? "展开侧栏" : "折叠侧栏";
+    default:
+      return "";
+  }
+});
+
+function showTip(key: "fab" | "toggle" | "new", event: MouseEvent) {
+  // 展开态下「新对话」已是文案按钮，无需 tip
+  if (key === "new" && !railCollapsed.value) {
+    return;
+  }
+  const el = event.currentTarget as HTMLElement | null;
+  if (!el) {
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  tipStyle.value = {
+    top: `${rect.top + rect.height / 2}px`,
+    left: `${rect.right + 8}px`,
+  };
   openTip.value = key;
 }
 
@@ -46,24 +72,17 @@ function clearTip() {
     @click="emit('close')"
   />
 
-  <ElTooltip
+  <button
     v-if="narrow && collapsed"
-    content="展开侧栏"
-    placement="right"
-    trigger="manual"
-    :visible="openTip === 'fab'"
+    type="button"
+    class="chat-sidebar__fab"
+    aria-label="展开侧栏"
+    @mouseenter="showTip('fab', $event)"
+    @mouseleave="hideTip('fab')"
+    @click="clearTip(); emit('toggle')"
   >
-    <button
-      type="button"
-      class="chat-sidebar__fab"
-      aria-label="展开侧栏"
-      @mouseenter="showTip('fab')"
-      @mouseleave="hideTip('fab')"
-      @click="clearTip(); emit('toggle')"
-    >
-      <img :src="sidebarIcon" alt="" class="chat-sidebar__glyph" width="18" height="18">
-    </button>
-  </ElTooltip>
+    <PanelLeft class="chat-sidebar__glyph" :size="18" aria-hidden="true" />
+  </button>
 
   <aside
     class="chat-sidebar"
@@ -76,51 +95,35 @@ function clearTip() {
       class="chat-sidebar__top"
       :class="{ 'is-rail': railCollapsed }"
     >
-      <ElTooltip
-        content="新建会话"
-        placement="right"
-        trigger="manual"
-        :visible="openTip === 'new'"
+      <button
+        type="button"
+        class="chat-sidebar__icon-btn chat-sidebar__new-icon"
+        :class="{ 'is-text': !railCollapsed }"
+        aria-label="新建会话"
+        @mouseenter="showTip('new', $event)"
+        @mouseleave="hideTip('new')"
+        @click="clearTip(); emit('newChat')"
       >
-        <button
-          type="button"
-          class="chat-sidebar__icon-btn chat-sidebar__new-icon"
-          :class="{ 'is-text': !railCollapsed }"
-          aria-label="新建会话"
-          @mouseenter="showTip('new')"
-          @mouseleave="hideTip('new')"
-          @click="clearTip(); emit('newChat')"
-        >
-          <img
-            v-if="railCollapsed"
-            :src="plusIcon"
-            alt=""
-            class="chat-sidebar__glyph"
-            width="18"
-            height="18"
-          >
-          <span v-else>新对话</span>
-        </button>
-      </ElTooltip>
+        <Plus
+          v-if="railCollapsed"
+          class="chat-sidebar__glyph"
+          :size="18"
+          aria-hidden="true"
+        />
+        <span v-else>新对话</span>
+      </button>
 
-      <ElTooltip
-        :content="collapsed ? '展开侧栏' : '折叠侧栏'"
-        placement="right"
-        trigger="manual"
-        :visible="openTip === 'toggle'"
+      <button
+        type="button"
+        class="chat-sidebar__icon-btn"
+        :aria-label="collapsed ? '展开侧栏' : '折叠侧栏'"
+        :aria-expanded="!collapsed"
+        @mouseenter="showTip('toggle', $event)"
+        @mouseleave="hideTip('toggle')"
+        @click="clearTip(); emit('toggle')"
       >
-        <button
-          type="button"
-          class="chat-sidebar__icon-btn"
-          :aria-label="collapsed ? '展开侧栏' : '折叠侧栏'"
-          :aria-expanded="!collapsed"
-          @mouseenter="showTip('toggle')"
-          @mouseleave="hideTip('toggle')"
-          @click="clearTip(); emit('toggle')"
-        >
-          <img :src="sidebarIcon" alt="" class="chat-sidebar__glyph" width="18" height="18">
-        </button>
-      </ElTooltip>
+        <PanelLeft class="chat-sidebar__glyph" :size="18" aria-hidden="true" />
+      </button>
     </div>
 
     <div v-if="!collapsed" class="chat-sidebar__list">
@@ -139,6 +142,15 @@ function clearTip() {
       </p>
     </div>
   </aside>
+
+  <Teleport to="body">
+    <span
+      v-if="openTip && tipLabel"
+      class="chat-sidebar__tip"
+      role="tooltip"
+      :style="tipStyle"
+    >{{ tipLabel }}</span>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -146,14 +158,12 @@ function clearTip() {
   display: none;
 }
 
-.chat-sidebar__fab {
-  position: fixed;
-  top: 14px;
-  left: 14px;
-  z-index: 35;
+.chat-sidebar__fab,
+.chat-sidebar__icon-btn {
   display: inline-flex;
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border: 1px solid rgb(203 213 225);
@@ -161,8 +171,15 @@ function clearTip() {
   background: white;
   color: rgb(51 65 85);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgb(15 23 42 / 8%);
   padding: 0;
+}
+
+.chat-sidebar__fab {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 35;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 8%);
 }
 
 .chat-sidebar {
@@ -201,23 +218,7 @@ function clearTip() {
 
 .chat-sidebar__glyph {
   display: block;
-  width: 18px;
-  height: 18px;
-}
-
-.chat-sidebar__icon-btn {
-  display: inline-flex;
-  width: 36px;
-  height: 36px;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(203 213 225);
-  border-radius: 10px;
-  background: white;
-  color: rgb(51 65 85);
-  cursor: pointer;
-  padding: 0;
 }
 
 .chat-sidebar__icon-btn:hover {
@@ -310,5 +311,22 @@ function clearTip() {
   z-index: 30;
   display: block;
   background: rgb(15 23 42 / 28%);
+}
+</style>
+
+<style>
+/* Teleport 到 body，不能用 scoped */
+.chat-sidebar__tip {
+  position: fixed;
+  z-index: 1000;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  border-radius: 6px;
+  background: rgb(15 23 42);
+  color: rgb(248 250 252);
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 6px 8px;
+  pointer-events: none;
 }
 </style>
