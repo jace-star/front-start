@@ -31,6 +31,7 @@ function titleFromPrompt(prompt: string) {
 const sessions = ref<ChatSession[]>([]);
 const activeSessionId = ref<string | null>(null);
 const isStreaming = ref(false);
+let streamAbort: AbortController | null = null;
 /** 侧栏是否折叠；窄屏下折叠表示关闭抽屉 */
 const sidebarCollapsed = ref(false);
 /** 宽屏下用户是否主动折叠；为 true 时屏幕恢复也不自动展开 */
@@ -111,6 +112,12 @@ function selectSession(id: string) {
   }
 }
 
+function stop() {
+  streamAbort?.abort();
+  streamAbort = null;
+  isStreaming.value = false;
+}
+
 async function send(prompt: string) {
   const text = prompt.trim();
   if (!text || isStreaming.value) {
@@ -134,16 +141,28 @@ async function send(prompt: string) {
     content: "",
   };
   session.messages.push(assistant);
+
+  streamAbort?.abort();
+  streamAbort = new AbortController();
+  const { signal } = streamAbort;
   isStreaming.value = true;
 
   try {
-    for await (const chunk of mockChatStream(text)) {
+    for await (const chunk of mockChatStream(text, signal)) {
+      if (signal.aborted) {
+        break;
+      }
       assistant.content += chunk;
     }
-  } catch {
-    assistant.content = assistant.content || "回复失败，请稍后重试。";
+  } catch (error) {
+    if (!(error instanceof DOMException && error.name === "AbortError")) {
+      assistant.content = assistant.content || "回复失败，请稍后重试。";
+    }
   } finally {
-    isStreaming.value = false;
+    if (streamAbort?.signal === signal) {
+      streamAbort = null;
+      isStreaming.value = false;
+    }
   }
 }
 
@@ -163,5 +182,6 @@ export function useChat() {
     newChat,
     selectSession,
     send,
+    stop,
   };
 }

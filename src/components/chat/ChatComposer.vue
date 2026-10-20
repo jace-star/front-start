@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
+import pauseIcon from "@/assets/icons/pause.svg";
+import sendIcon from "@/assets/icons/send.svg";
 
 defineOptions({ name: "ChatComposer" });
 
 const props = withDefaults(
   defineProps<{
     disabled?: boolean;
+    streaming?: boolean;
     compact?: boolean;
     placeholder?: string;
   }>(),
   {
     disabled: false,
+    streaming: false,
     compact: false,
     placeholder: "问问 AI…",
   },
@@ -18,6 +22,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   submit: [value: string];
+  stop: [];
 }>();
 
 const value = ref("");
@@ -38,6 +43,10 @@ watch(value, async () => {
 });
 
 function submit() {
+  if (props.streaming) {
+    emit("stop");
+    return;
+  }
   const text = value.value.trim();
   if (!text || props.disabled) {
     return;
@@ -48,6 +57,9 @@ function submit() {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (props.streaming) {
+    return;
+  }
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     submit();
@@ -66,16 +78,23 @@ function onKeydown(event: KeyboardEvent) {
       v-model="value"
       class="chat-composer__input"
       rows="1"
-      :disabled="disabled"
+      :disabled="disabled || streaming"
       :placeholder="placeholder"
       @keydown="onKeydown"
     />
     <button
       type="submit"
       class="chat-composer__send"
-      :disabled="disabled || !value.trim()"
+      :aria-label="streaming ? '暂停' : '发送'"
+      :disabled="!streaming && (disabled || !value.trim())"
     >
-      发送
+      <img
+        :src="streaming ? pauseIcon : sendIcon"
+        alt=""
+        class="chat-composer__send-icon"
+        width="18"
+        height="18"
+      >
     </button>
   </form>
 </template>
@@ -117,16 +136,23 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .chat-composer__send {
+  display: inline-flex;
+  width: 36px;
   height: 36px;
   flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   background: rgb(37 99 235);
-  color: white;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0 14px;
+  padding: 0;
+}
+
+.chat-composer__send-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
 }
 
 .chat-composer__send:disabled {

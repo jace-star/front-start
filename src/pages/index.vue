@@ -1,6 +1,6 @@
 <route lang="yaml">
 meta:
-  title: AI 对话
+  title: 首页
 </route>
 
 <script setup lang="ts">
@@ -26,6 +26,7 @@ const {
   newChat,
   selectSession,
   send,
+  stop,
 } = useChat();
 </script>
 
@@ -48,9 +49,10 @@ const {
           从一条消息开始
         </h2>
         <ChatComposer
-          :disabled="isStreaming"
+          :streaming="isStreaming"
           placeholder="随便问点什么…"
           @submit="send"
+          @stop="stop"
         />
       </div>
 
@@ -59,8 +61,9 @@ const {
         <div class="chat-main__footer">
           <ChatComposer
             compact
-            :disabled="isStreaming"
+            :streaming="isStreaming"
             @submit="send"
+            @stop="stop"
           />
         </div>
       </template>
