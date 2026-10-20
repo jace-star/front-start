@@ -1,6 +1,21 @@
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
+function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+
+    function onAbort() {
+      window.clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    }
+
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
 
@@ -25,10 +40,13 @@ function buildMockReply(prompt: string) {
 }
 
 /** 可替换为真实 SSE / 流式客户端 */
-export async function* mockChatStream(prompt: string): AsyncGenerator<string> {
+export async function* mockChatStream(
+  prompt: string,
+  signal?: AbortSignal,
+): AsyncGenerator<string> {
   const reply = buildMockReply(prompt);
   for (const char of reply) {
-    await sleep(12);
+    await sleep(12, signal);
     yield char;
   }
 }
