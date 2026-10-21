@@ -5,10 +5,9 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import pinia from "./store/pinia";
-import "@/assets/css/index.css";
 import "uno.css";
+import "@/assets/css/index.css";
 import "katex/dist/katex.min.css";
-import "nprogress/nprogress.css";
 
 enableKatex(() => katex);
 

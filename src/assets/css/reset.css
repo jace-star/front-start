@@ -1,3 +1,5 @@
+/* 浏览器基线重置，与品牌 / 业务主题无关 */
+
 *,
 *::before,
 *::after {
@@ -13,6 +15,11 @@ body,
 	width: 100%;
 }
 
+html {
+	overflow: hidden;
+	margin: 0;
+}
+
 body {
 	margin: 0;
 	font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
@@ -20,8 +27,6 @@ body {
 	letter-spacing: 1px;
 	line-height: 1.5rem;
 	overflow: hidden;
-	color: oklch(var(--foreground));
-	background-color: oklch(var(--background));
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
@@ -38,6 +43,11 @@ table td {
 	padding: 5px;
 }
 
+ul,
+li {
+	list-style: none;
+}
+
 ::-webkit-scrollbar {
 	width: 5px;
 }
@@ -51,4 +61,14 @@ table td {
 ::-webkit-scrollbar-track {
 	background: transparent;
 	border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
 }

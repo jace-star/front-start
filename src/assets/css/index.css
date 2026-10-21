@@ -1,2 +1,3 @@
 @import "./reset.css";
-@import "./base.less";
+@import "nprogress/nprogress.css";
+@import "./common.css";

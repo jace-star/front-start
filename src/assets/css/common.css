@@ -1,0 +1,82 @@
+/* 设计 token、主题色与业务相关全局样式 */
+
+:root {
+	font-size: calc(100vw / 120);
+
+	/* Surfaces */
+	--color-back: #fff;
+	--color-canvas: #eef2f7;
+
+	/* Text */
+	--color-text-primary: #0b1220;
+	--color-text-secondary: #5b6b81;
+	--color-text-muted: #8b9bb0;
+
+	/* Borders */
+	--color-border: #e3e9f2;
+
+	/* Accent — sky */
+	--color-accent: #0ea5e9;
+	--color-accent-strong: #0284c7;
+	--color-accent-soft: #e0f2fe;
+	--color-on-accent: #fff;
+
+	/* Sidebar — light frosted rail */
+	--color-sidebar: rgb(255 255 255 / 82%);
+	--color-sidebar-hover: #f1f5f9;
+	--color-sidebar-active: var(--color-accent);
+	--color-sidebar-active-bg: #e0f2fe;
+	--color-sidebar-active-text: #0369a1;
+	--color-sidebar-text: #64748b;
+	--color-sidebar-text-strong: #0f172a;
+	--color-sidebar-border: rgb(148 163 184 / 22%);
+
+	/* Shape */
+	--radius-card: 16px;
+	--radius-button: 10px;
+	--radius-shell: 18px;
+	--shadow-card:
+		0 1px 0 rgb(15 23 42 / 3%),
+		0 8px 24px rgb(15 23 42 / 6%);
+	--shadow-card-hover:
+		0 1px 0 rgb(15 23 42 / 4%),
+		0 14px 36px rgb(15 23 42 / 10%);
+	--shadow-shell:
+		0 1px 0 rgb(15 23 42 / 4%),
+		0 18px 48px rgb(15 23 42 / 8%);
+
+	/* Shell */
+	--sidebar-width: 16rem;
+	--sidebar-width-collapsed: 4.25rem;
+}
+
+/* 针对超大屏额外调整 */
+@media screen and (min-width: 7680px) {
+	:root {
+		font-size: calc(16px + 0.4vw);
+	}
+}
+
+body {
+	color: oklch(var(--foreground));
+	background-color: oklch(var(--background));
+}
+
+#nprogress {
+	pointer-events: none;
+}
+
+#nprogress .bar {
+	background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+	height: 2px;
+}
+
+#nprogress .peg {
+	box-shadow:
+		0 0 10px #0ea5e9,
+		0 0 5px #0ea5e9;
+}
+
+#nprogress .spinner {
+	display: none;
+}
